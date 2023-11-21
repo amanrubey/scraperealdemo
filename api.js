@@ -6,13 +6,27 @@ import cheerio from "cheerio";
 const app = express();
 const port = process.env.PORT || 4000;
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 async function flipkart(title,resultArray)
 {
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://www.google.com/',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0',
+        'TE': 'Trailers',
+      };
     let p_names = [], prices = [], reviews = [], desc = [], urls = [], trs = [];
     console.log("Im flippkart");
     let webs = "https://www.flipkart.com"
     let url = `https://www.flipkart.com/search?q=${title}`
-    const {data} =await axios.get(url)
+    const {data} =await axios.get(url,{headers})
     const $ = cheerio.load(data);
     const review_divs = $('._1YokD2  ._3LWZlK');
     const product_divs = $("._4rR01T")
@@ -57,6 +71,7 @@ async function flipkart(title,resultArray)
     {
         resultArray.push(tempresultArray[i]);
     }
+    await delay(1000);
 }
 async function shopclues(p_names, prices, reviews, desc, urls, trs)
 {
