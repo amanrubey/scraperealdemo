@@ -69,38 +69,44 @@ async function snapdeal(p_names, prices, reviews, desc, urls, trs)
     let webs = "https://www.snapdeal.com"
 }
 app.get("/do", async (req, res) => {
-    let title = req.query.title;
-    let filter = req.query.filter;
-    let topN = req.query.topN;
-    let website = req.query.website;
-    let resultArray = [];
-    console.log(title,filter,topN);
-    console.log(website);
-    if(typeof website === 'string') website = [website]
-    if(website === undefined ) website = ['flipkart','snapdeal','shopclues']
-    if(website.length == 1 && website[0]=="") website = ['flipkart','snapdeal','shopclues']
-    console.log(website);
-    for(let i = 0; i<website.length; i++)
+    try{
+        let title = req.query.title;
+        let filter = req.query.filter;
+        let topN = req.query.topN;
+        let website = req.query.website;
+        let resultArray = [];
+        console.log(title,filter,topN);
+        console.log(website);
+        if(typeof website === 'string') website = [website]
+        if(website === undefined ) website = ['flipkart','snapdeal','shopclues']
+        if(website.length == 1 && website[0]=="") website = ['flipkart','snapdeal','shopclues']
+        console.log(website);
+        for(let i = 0; i<website.length; i++)
+        {
+            if(website[i] == 'flipkart') await flipkart(title,resultArray)
+            else if(website[i] == 'snapdeal') await snapdeal(title,resultArray);
+            else if(website[i] == 'shopclues') await shopclues(title,resultArray)
+        }
+        
+        const obj = {
+            products: resultArray,
+            total_products_considered: resultArray.length
+        }
+        if(filter == 'lp') obj.products.sort((a,b)=> a.price - b.price);
+        else if(filter == 'hp') obj.products.sort((a,b)=> b.price - a.price);
+        else if(filter == 'hreview') obj.products.sort((a,b)=> b.total_review_count - a.total_review_count);
+        else if(filter == 'hrating') obj.products.sort((a,b)=> b.rating - a.rating);
+        let n = parseInt(topN,10)
+
+        obj.products.splice(n);
+
+        const myobj = JSON.stringify(obj);
+        res.send(myobj)
+    }
+    catch(err)
     {
-        if(website[i] == 'flipkart') await flipkart(title,resultArray)
-        else if(website[i] == 'snapdeal') await snapdeal(title,resultArray);
-        else if(website[i] == 'shopclues') await shopclues(title,resultArray)
+        res.send(err);
     }
-    
-    const obj = {
-        products: resultArray,
-        total_products_considered: resultArray.length
-    }
-    if(filter == 'lp') obj.products.sort((a,b)=> a.price - b.price);
-    else if(filter == 'hp') obj.products.sort((a,b)=> b.price - a.price);
-    else if(filter == 'hreview') obj.products.sort((a,b)=> b.total_review_count - a.total_review_count);
-    else if(filter == 'hrating') obj.products.sort((a,b)=> b.rating - a.rating);
-    let n = parseInt(topN,10)
-
-    obj.products.splice(n);
-
-    const myobj = JSON.stringify(obj);
-    res.send(myobj)
 });
 
 app.listen(port, () => {
